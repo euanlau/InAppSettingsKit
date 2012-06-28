@@ -185,6 +185,10 @@
   return [[_specifierDict objectForKey:kIASKIsModal] boolValue];
 }
 
+- (BOOL)isDebug {
+  return [[_specifierDict objectForKey:kIASKIsDebug] boolValue];
+}
+
 - (UIKeyboardType)keyboardType {
     if ([[_specifierDict objectForKey:KIASKKeyboardType] isEqualToString:kIASKKeyboardAlphabet]) {
         return UIKeyboardTypeDefault;

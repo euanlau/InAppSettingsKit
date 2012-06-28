@@ -17,6 +17,12 @@
 #import "IASKSettingsReader.h"
 #import "IASKSpecifier.h"
 
+#if DEBUG
+static const BOOL isDebug = YES;
+#else
+static const BOOL isDebug = NO;
+#endif    
+
 @interface IASKSettingsReader (private)
 - (void)_reinterpretBundle:(NSDictionary*)settingsBundle;
 - (BOOL)_sectionHasHeading:(NSInteger)section;
@@ -85,6 +91,9 @@ dataSource=_dataSource;
 	NSMutableArray *dataSource		= [[[NSMutableArray alloc] init] autorelease];
 	
 	for (NSDictionary *specifier in preferenceSpecifiers) {
+    if (!isDebug && [[specifier objectForKey:kIASKIsDebug] boolValue])
+      continue;
+    
 		if ([(NSString*)[specifier objectForKey:kIASKType] isEqualToString:kIASKPSGroupSpecifier]) {
 			NSMutableArray *newArray = [[NSMutableArray alloc] init];
 			

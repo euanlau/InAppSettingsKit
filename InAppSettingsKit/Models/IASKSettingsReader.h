@@ -29,6 +29,7 @@
 #define kIASKFalseValue                       @"FalseValue"
 #define kIASKIsSecure                         @"IsSecure"
 #define kIASKIsModal                          @"IsModal"
+#define kIASKIsDebug                          @"IsDebug"
 #define KIASKKeyboardType                     @"KeyboardType"
 #define kIASKAutocapitalizationType           @"AutocapitalizationType"
 #define kIASKAutoCorrectionType               @"AutocorrectionType"

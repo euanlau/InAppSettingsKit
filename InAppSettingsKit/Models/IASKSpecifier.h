@@ -48,6 +48,7 @@
 - (NSString*)maximumValueImage;
 - (BOOL)isSecure;
 - (BOOL)isModal;
+- (BOOL)isDebug;
 - (UIKeyboardType)keyboardType;
 - (UITextAutocapitalizationType)autocapitalizationType;
 - (UITextAutocorrectionType)autoCorrectionType;
