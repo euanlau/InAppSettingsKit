@@ -171,7 +171,7 @@
     [self setCheckedItem:indexPath];
 	
     [self.settingsStore setObject:[values objectAtIndex:indexPath.row] forKey:[_currentSpecifier key]];
-	[self.settingsStore synchronize];
+    [self.settingsStore synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:kIASKAppSettingChanged
                                                         object:[_currentSpecifier key]
                                                       userInfo:[NSDictionary dictionaryWithObject:[values objectAtIndex:indexPath.row]

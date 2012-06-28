@@ -133,7 +133,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 //common (NIB & code based) initialization
 - (void) setup {
   // If set to YES, will display credits for InAppSettingsKit creators
-  _showCreditsFooter = YES;
+  _showCreditsFooter = NO;
 }
 
 - (NSMutableArray *)viewList {
@@ -496,6 +496,18 @@ CGRect IASKCGRectSwap(CGRect rect);
 	}
 	else if ([specifier.type isEqualToString:kIASKPSChildPaneSpecifier]) {
 		cell.textLabel.text = specifier.title;
+    if (specifier.key)
+    {
+      id value = [self.settingsStore objectForKey:specifier.key] ? : specifier.defaultValue;
+      
+      NSString *stringValue;
+      if (specifier.multipleValues || specifier.multipleTitles) {
+        stringValue = [specifier titleForCurrentValue:value];
+      } else {
+        stringValue = [value description];
+      }
+      cell.detailTextLabel.text = stringValue;
+    }
 	} else if ([specifier.type isEqualToString:kIASKOpenURLSpecifier] || [specifier.type isEqualToString:kIASKMailComposeSpecifier]) {
 		cell.textLabel.text = specifier.title;
 		cell.detailTextLabel.text = [specifier.defaultValue description];
@@ -560,56 +572,70 @@ CGRect IASKCGRectSwap(CGRect rect);
     }
     else if ([[specifier type] isEqualToString:kIASKPSChildPaneSpecifier]) {
 
-        
-        Class vcClass = [specifier viewControllerClass];
-        if (vcClass) {
-            SEL initSelector = [specifier viewControllerSelector];
-            if (!initSelector) {
-                initSelector = @selector(init);
-            }
-            UIViewController * vc = [vcClass performSelector:@selector(alloc)];
-            [vc performSelector:initSelector withObject:[specifier file] withObject:[specifier key]];
-			if ([vc respondsToSelector:@selector(setDelegate:)]) {
-				[vc performSelector:@selector(setDelegate:) withObject:self.delegate];
-			}
-			if ([vc respondsToSelector:@selector(setSettingsStore:)]) {
-				[vc performSelector:@selector(setSettingsStore:) withObject:self.settingsStore];
-			}
-            [self.navigationController pushViewController:vc animated:YES];
-            [vc performSelector:@selector(release)];
-            return;
+      
+      Class vcClass = [specifier viewControllerClass];
+      if (vcClass) {
+        SEL initSelector = [specifier viewControllerSelector];
+        if (!initSelector) {
+          initSelector = @selector(init);
         }
-        
-        if (nil == [specifier file]) {
-            [tableView deselectRowAtIndexPath:indexPath animated:YES];
-            return;
-        }        
-        
-        IASKAppSettingsViewController *targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex] objectForKey:@"viewController"];
-		
-        if (targetViewController == nil) {
-            // the view controller has not been created yet, create it and set it to our viewList array
-            // create a new dictionary with the new view controller
-            NSMutableDictionary *newItemDict = [NSMutableDictionary dictionaryWithCapacity:3];
-            [newItemDict addEntriesFromDictionary: [self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex]];	// copy the title and explain strings
-            
-            targetViewController = [[[self class] alloc] initWithNibName:@"IASKAppSettingsView" bundle:nil];
-			targetViewController.showDoneButton = NO;
-			targetViewController.settingsStore = self.settingsStore; 
-			targetViewController.delegate = self.delegate;
+        UIViewController * vc = [vcClass performSelector:@selector(alloc)];
+        [vc performSelector:initSelector withObject:[specifier file] withObject:[specifier key]];
+        if ([vc respondsToSelector:@selector(setDelegate:)]) {
+          [vc performSelector:@selector(setDelegate:) withObject:self.delegate];
+        }
+        if ([vc respondsToSelector:@selector(setSettingsStore:)]) {
+          [vc performSelector:@selector(setSettingsStore:) withObject:self.settingsStore];
+        }
+        if ([vc respondsToSelector:@selector(setCurrentSpecifier:)]) {
+          [vc performSelector:@selector(setCurrentSpecifier:) withObject:specifier];
+        }
 
-            // add the new view controller to the dictionary and then to the 'viewList' array
-            [newItemDict setObject:targetViewController forKey:@"viewController"];
-            [self.viewList replaceObjectAtIndex:kIASKSpecifierChildViewControllerIndex withObject:newItemDict];
-            [targetViewController release];
-            
-            // load the view controll back in to push it
-            targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex] objectForKey:@"viewController"];
+        if ([specifier isModal])
+        {
+          UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
+          [self presentModalViewController:navController animated:YES];
         }
-		targetViewController.file = specifier.file;
-		targetViewController.title = specifier.title;
-        targetViewController.showCreditsFooter = NO;
-        [[self navigationController] pushViewController:targetViewController animated:YES];
+        else
+        {
+          [self.navigationController pushViewController:vc animated:YES];
+        }
+        
+        [vc performSelector:@selector(release)];
+          
+        return;
+      }
+        
+      if (nil == [specifier file]) {
+        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        return;
+      }        
+      
+      IASKAppSettingsViewController *targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex] objectForKey:@"viewController"];
+      
+      if (targetViewController == nil) {
+        // the view controller has not been created yet, create it and set it to our viewList array
+        // create a new dictionary with the new view controller
+        NSMutableDictionary *newItemDict = [NSMutableDictionary dictionaryWithCapacity:3];
+        [newItemDict addEntriesFromDictionary: [self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex]];	// copy the title and explain strings
+        
+        targetViewController = [[[self class] alloc] initWithNibName:@"IASKAppSettingsView" bundle:nil];
+        targetViewController.showDoneButton = NO;
+        targetViewController.settingsStore = self.settingsStore; 
+        targetViewController.delegate = self.delegate;
+
+        // add the new view controller to the dictionary and then to the 'viewList' array
+        [newItemDict setObject:targetViewController forKey:@"viewController"];
+        [self.viewList replaceObjectAtIndex:kIASKSpecifierChildViewControllerIndex withObject:newItemDict];
+        [targetViewController release];
+        
+        // load the view controll back in to push it
+        targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex] objectForKey:@"viewController"];
+      }
+      targetViewController.file = specifier.file;
+      targetViewController.title = specifier.title;
+      targetViewController.showCreditsFooter = NO;
+      [[self navigationController] pushViewController:targetViewController animated:YES];
     } else if ([[specifier type] isEqualToString:kIASKOpenURLSpecifier]) {
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:specifier.file]];    
