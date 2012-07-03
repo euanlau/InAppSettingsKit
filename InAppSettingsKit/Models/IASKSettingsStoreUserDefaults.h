@@ -22,4 +22,6 @@
 
 }
 
++ (IASKSettingsStoreUserDefaults *)sharedInstance;
+
 @end

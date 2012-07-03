@@ -20,6 +20,17 @@
 
 @implementation IASKSettingsStoreUserDefaults
 
+#pragma mark - Singleton implementation in ARC
++ (IASKSettingsStoreUserDefaults *)sharedInstance
+{
+  static IASKSettingsStoreUserDefaults *sharedInstance = nil;
+  static dispatch_once_t predicate;
+  dispatch_once(&predicate, ^{
+    sharedInstance = [[self alloc] init];
+  });
+  return sharedInstance;
+}
+
 - (void)setBool:(BOOL)value forKey:(NSString*)key {
     [[NSUserDefaults standardUserDefaults] setBool:value forKey:key];
 }
