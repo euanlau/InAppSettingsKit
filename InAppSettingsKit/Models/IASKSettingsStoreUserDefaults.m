@@ -75,4 +75,8 @@
     return [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+- (void)removeObjectForKey:(NSString *)key {
+  [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
+}
+
 @end
