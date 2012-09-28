@@ -593,7 +593,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 
         if ([specifier isModal])
         {
-          UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
+          UINavigationController *navController = [[HLNavigationController alloc] initWithRootViewController:vc];
           [self presentModalViewController:navController animated:YES];
         }
         else
